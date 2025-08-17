@@ -1,0 +1,46 @@
+name: Upload Video to YouTube
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_file_path:
+        description: 'Path to the video file to upload'
+        required: true
+        type: string
+      title:
+        description: 'Title for the YouTube video'
+        required: true
+        type: string
+      description:
+        description: 'Description for the YouTube video'
+        required: true
+        type: string
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Upload video to YouTube
+      env:
+        YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+        YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+        YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      run: |
+        python upload_to_youtube.py \
+          --file "${{ github.event.inputs.video_file_path }}" \
+          --title "${{ github.event.inputs.title }}" \
+          --description "${{ github.event.inputs.description }}"
